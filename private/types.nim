@@ -13,6 +13,12 @@
 # limitations under the License.
 
 type
+  Complex32* = object
+    re: float32
+    im: float32
+  Complex64* = object
+    re: float64
+    im: float64
   Vector32*[N: static[int]] = ref array[N, float32]
   Vector64*[N: static[int]] = ref array[N, float64]
   Matrix32*[M, N: static[int]] = object

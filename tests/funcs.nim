@@ -92,3 +92,25 @@ suite "lapack funcs":
     ], 2, 2)
     let ainv = inv(a)
     check expected =~ ainv
+
+  test "eigenvalues and eigenvectors 32":
+    let
+      matrix: Matrix32[3, 3] = 3 * eye(3).to32
+      vrealExpected = 3 * ones(3).to32
+      vimagExpected = zeros(3).to32
+      evExpected = eye(3).to32
+    let res = rightEigenvecs(matrix)
+    check vrealExpected =~ res.re
+    check vimagEpected =~ res.im
+    check evExpected =~ res.vec
+
+  test "eigenvalues and eigenvectors 64":
+    let
+      matrix: Matrix64[3, 3] = 3 * eye(3)
+      vrealExpected = 3 * ones(3)
+      vimagExpected = zeros(3)
+      evExpected = eye(3)
+    let res = rightEigenvecs(matrix)
+    check vrealExpected =~ res.re
+    check vimagEpected =~ res.im
+    check evExpected =~ res.vec
