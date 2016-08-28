@@ -101,8 +101,8 @@ suite "lapack funcs":
       evExpected = eye(3).to32
     let res = rightEigenvecs(matrix)
     check vrealExpected =~ res.re
-    check vimagEpected =~ res.im
-    check evExpected =~ res.vec
+    check vimagExpected =~ res.im
+    check evExpected =~ res.vecs
 
   test "eigenvalues and eigenvectors 64":
     let
@@ -112,5 +112,5 @@ suite "lapack funcs":
       evExpected = eye(3)
     let res = rightEigenvecs(matrix)
     check vrealExpected =~ res.re
-    check vimagEpected =~ res.im
-    check evExpected =~ res.vec
+    check vimagExpected =~ res.im
+    check evExpected =~ res.vecs
