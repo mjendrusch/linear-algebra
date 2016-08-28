@@ -461,7 +461,7 @@ proc compareApprox(a, b: Vector32 or Vector64 or DVector32 or DVector64 or Matri
     aNorm = l_1(a)
     bNorm = l_1(b)
     dNorm = l_1(a - b)
-  return (dNorm / (aNorm + bNorm)) < epsilon
+  return (dNorm / (aNorm + bNorm)) < epsilon or (aNorm == 0.0 and bNorm == 0.0)
 
 template `=~`*[N: static[int]](v, w: Vector32[N]): bool = compareApprox(v, w)
 
