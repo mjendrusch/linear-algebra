@@ -455,6 +455,79 @@ proc `*`*[M, N, K: static[int]](a: Matrix64[M, K], b: Matrix64[K, N]): Matrix64[
 
 proc `*`*(a: DMatrix64, b: DMatrix64): DMatrix64 {. inline .} = matrixMultD(a, b, result)
 
+template memTransposePrivate(N, a: untyped; A: typedesc): auto =
+  for idx in 0..N-2:
+    var temp: A
+    for idy in idx+1..N-1:
+      temp = a[idx, idy]
+      a[idx, idy] = a[idy, idx]
+      a[idy, idx] = temp
+
+template `[]`(a: Matrix32 | DMatrix32, n: int): auto =
+  a.data[n]
+
+template `[]`(a: Matrix64 | DMatrix64, n: int): auto =
+  a.data[n]
+
+template `[]=`(a: var Matrix32 | DMatrix32, n: int, b: float32) =
+  a.data[n] = b
+
+template `[]=`(a: var Matrix64 | DMatrix64, n: int, b: float64) =
+  a.data[n] = b
+
+template copyTranspose(M, N, a: untyped; A: typedesc): auto =
+  makeMatrix(N, M, proc(i, j: int): A = a[j, i])
+
+template cycleTranspose(M, N, a: untyped; A: typedesc): auto =
+  if M == N:
+    memTransposePrivate(M, a, A)
+    return
+  var
+    visited: seq[bool] = newSeq[bool](M * N)
+    aTrans = a.t
+  for elem in visited.mitems:
+    elem = false
+  for idn in 0u32..uint(N-1):
+    for idm in 0u32..uint(M-1):
+      var pos = idm * uint(N) + idn
+      if not visited[int(pos)]:
+        var
+          currentPos = pos
+          val: A = aTrans[int(idn), int(idm)]
+        while not visited[int(currentPos)]:
+          visited[int(currentPos)] = true
+          var
+            idJ = currentPos div uint(M)
+            idI = currentPos - uint(M) * idJ
+            temp = aTrans[int(idJ), int(idI)]
+          aTrans[int(idJ), int(idI)] = val
+          val = temp
+          currentPos = idI*uint(N) + idJ
+
+proc memTranspose*[M, N: static[int]](a: var Matrix64[M, N]) {. inline .} =
+  cycleTranspose(M, N, a, float64)
+
+proc memTranspose*[M, N: static[int]](a: var Matrix32[M, N]) {. inline .} =
+  cycleTranspose(M, N, a, float32)
+
+proc memTranspose*(a: var DMatrix64) {. inline .} =
+  cycleTranspose(a.M, a.N, a, float64)
+
+proc memTranspose*(a: var DMatrix32) {. inline .} =
+  cycleTranspose(a.M, a.N, a, float32)
+
+proc copyMemTranspose*[M, N: static[int]](a: Matrix64[M, N]): Matrix64[N, M] {. inline .} =
+  copyTranspose(M, N, a, float64)
+
+proc copyMemTranspose*[M, N: static[int]](a: Matrix32[M, N]): Matrix32[N, M] {. inline .} =
+  copyTranspose(M, N, a, float32)
+
+proc copyMemTranspose*(a: DMatrix64): DMatrix64 {. inline .} =
+  copyTranspose(a.M, a.N, a, float64)
+
+proc copyMemTranspose*(a: DMatrix32): DMatrix32 {. inline .} =
+  copyTranspose(a.M, a.N, a, float32)
+
 proc compareApprox(a, b: Vector32 or Vector64 or DVector32 or DVector64 or Matrix32 or Matrix64 or DMatrix32 or DMatrix64): bool =
   const epsilon = 0.000001
   let
